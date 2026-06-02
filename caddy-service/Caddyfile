@@ -1,0 +1,108 @@
+{
+	admin :2019 {
+		origins localhost
+		enforce_origin
+	}
+	debug
+	log default {
+		output stdout
+		# output file /var/caddy/log
+		format console
+		#format json
+	}
+#	on_demand_tls {
+#		ask https://caddy-cert-check:443/ask
+#	}
+}
+
+#caddy-cert-check {
+#	tls internal
+#	bind caddy-cert-check
+#	reverse_proxy caddy-cert-check:443
+#}
+
+:80 {
+	redir https://{host}:8443{uri} permanent
+}
+
+:443 {
+	tls internal {
+		on_demand
+	}
+	handle /auth/* {
+		uri strip_prefix /auth
+		reverse_proxy https://auth-service:3001 {
+			transport http {
+				tls
+				tls_trust_pool file /app/certs/auth-service.crt
+			}
+		}
+	}
+	handle /user/* {
+		uri strip_prefix /user
+		reverse_proxy https://user-management-service:3003 {
+			transport http {
+				tls
+				tls_trust_pool file /app/certs/user-management-service.crt
+			}
+		}
+	}
+	handle /api/db/* {
+		uri strip_prefix /api/db
+		reverse_proxy https://database-service:5000 {
+			transport http {
+				tls
+				tls_trust_pool file /app/certs/database-service.crt
+			}
+		}
+	}
+	handle /api/public/* {
+		reverse_proxy https://database-service:5000 {
+			transport http {
+				tls
+				tls_trust_pool file /app/certs/database-service.crt
+			}
+		}
+	}
+	handle /public/* {
+        reverse_proxy https://user-management-service:3003 {
+			transport http {
+				tls
+				tls_trust_pool file /app/certs/user-management-service.crt
+			}
+		}
+    }
+	handle /chat/* {
+		uri strip_prefix /chat
+		reverse_proxy https://chat-service:3004 {
+			transport http {
+				tls
+				tls_trust_pool file /app/certs/chat-service.crt
+			}
+		}
+	}
+	handle /kong/* {
+		uri strip_prefix /kong
+		reverse_proxy https://kong-service:3000 {
+			transport http {
+				tls
+				tls_trust_pool file /app/certs/kong-service.crt
+			}
+		}
+	}
+#	handle /fm/* {
+#		uri strip_prefix /fm
+#		reverse_proxy file-management-service:5010
+#	}
+#	handle /tournament/* {
+#		uri strip_prefix /tournament
+#		reverse_proxy tournament-service:5003
+#	}
+#	handle /rmq/* {
+#		uri strip_prefix /rmq
+#		reverse_proxy rabbit-mq-service:5000
+#	}
+	handle {
+		reverse_proxy frontend:3000 
+	}
+}

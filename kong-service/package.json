@@ -1,0 +1,34 @@
+{
+  "name": "ft_transcendence",
+  "version": "1.0.0",
+  "description": "Multiplayer game server for Kong and Age of War",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev:build": "tsc -w",
+    "dev": "tsc && (tsc -w & node --watch dist/index.js)",
+    "build": "tsc",
+    "start": "tsc && node dist/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/achille-bsc/transcendence.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/achille-bsc/transcendence/issues"
+  },
+  "homepage": "https://github.com/achille-bsc/transcendence#readme",
+  "dependencies": {
+    "@fastify/websocket": "^10.0.1",
+    "fastify": "4.16.2",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.0",
+    "@types/uuid": "^9.0.7",
+    "typescript": "^5.9.3"
+  }
+}

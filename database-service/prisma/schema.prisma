@@ -1,0 +1,78 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model User {
+  pseudo      String    @id
+  email       String    @unique
+  password    String?
+  avatar      String?   @default("default.png")
+
+  apiKey      String?
+
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  participants  ConversationParticipant[]
+  sentMessages  Message[]
+  friendRequestsSent     Friend[] @relation("UserAsRequester")
+  friendRequestsReceived Friend[] @relation("UserAsAddressee")
+}
+
+model Conversation {
+  id           Int      @id @default(autoincrement())
+  name         String?  
+  isGroup      Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt 
+
+  participants ConversationParticipant[]
+  messages     Message[]
+}
+
+model ConversationParticipant {
+  id             Int      @id @default(autoincrement())
+  conversationId Int
+  userId         String
+  
+  role           String   @default("member")
+  joinedAt       DateTime @default(now())
+
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  user           User         @relation(fields: [userId], references: [pseudo])
+
+  @@unique([conversationId, userId])
+}
+
+model Message {
+  id             Int      @id @default(autoincrement())
+
+  conversationId Int
+  senderId       String
+  
+  content        String
+  createdAt      DateTime @default(now())
+
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         User         @relation(fields: [senderId], references: [pseudo])
+}
+
+model Friend {
+  id          Int      @id @default(autoincrement())
+
+  requesterId String
+  requester   User     @relation("UserAsRequester", fields: [requesterId], references: [pseudo])
+
+  addresseeId String      
+  addressee   User     @relation("UserAsAddressee", fields: [addresseeId], references: [pseudo])
+
+  status      String   @default("PENDING")
+  createdAt   DateTime @default(now())
+
+  @@unique([requesterId, addresseeId]) 
+}
